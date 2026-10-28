@@ -1,8 +1,6 @@
 # Web Log Parser
 
-A `nanoagent.plugin/v0001` plugin, created by `nanoagent plugin new` with the
-structure of NanoAgent's reference plugin,
-[arxiv-source](https://github.com/zeyuyang8/arxiv-source).
+A `nanoagent.plugin/v0001` plugin.
 
 ## Tools
 
@@ -20,16 +18,32 @@ structure of NanoAgent's reference plugin,
 
 ```text
 .
-├── nanoagent.yaml   # manifest (a slimconfig ManifestConfig): id, runtime, permissions, tools, tasks
-├── contract.py      # each tool's and task's typed input and output: slimconfig Output classes
+├── nanoagent.yaml
+├── contract.py
 ├── README.md
 ├── LICENSE
 ├── pyproject.toml
 ├── uv.lock
 ├── .gitignore
-├── .env             # environment variable NAMEs this plugin needs, never values
-├── src/plugin/      # the MCP server: __main__.py, its IMPLEMENTATIONS, and the plugin's own modules
+├── .env
+├── src/plugin/
 ├── tests/
-├── ui/              # how the page draws the outputs: renderers.js and renderers.css
-├── product/         # the product page a catalog shows: product.yaml and icon.svg
-└── verifier/        # deterministic verifier package
+├── ui/
+├── product/
+└── verifier/
+```
+
+`contract.py` is the one place a value's shape is declared. Its Output classes are the JSON Schemas the server offers and the agent sees, and every input and output is built into its class on the way in and out. A tool that fails raises; NanoAgent sees an MCP error.
+
+## Develop and run
+
+```bash
+uv sync --extra dev
+uv run pytest
+```
+
+Publishing checks every plugin rule: push the plugin to a public GitHub repository and run:
+
+```bash
+rush publish <server> <github-url>
+```
