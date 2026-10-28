@@ -1,0 +1,30 @@
+_ > nanoagent.plugin.v0001.ManifestConfig:
+id: web-log-parser
+name: Web Log Parser
+version: 0.1.0
+status: in-development
+spec: nanoagent.plugin/v0001
+
+runtime > nanoagent.plugin.v0001.RuntimeConfig:
+  type: mcp_stdio
+  command: [uv, run, --frozen, python, -m, plugin]
+
+permissions > nanoagent.plugin.v0001.PermissionsConfig:
+  network > nanoagent.plugin.v0001.NetworkConfig:
+    hosts: []
+  filesystem > nanoagent.plugin.v0001.FilesystemConfig:
+    write: [workspace]
+
+# One entry per contract.Tool; its input and output classes are contract.TOOLS's.
+tools > dict[contract.Tool, nanoagent.plugin.v0001.ToolConfig]:
+  analyze_log:
+    description: Parse one Web log line and classify it as an access or error record
+
+# One entry per contract.Task; its input class is contract.TASKS's.
+tasks > dict[contract.Task, nanoagent.plugin.v0001.TaskConfig]:
+  analyze-log:
+    description: Parse and classify one Web server log line
+    runner: tool
+    tools: [analyze_log]
+    reference: null
+    instructions: Parse the log line according to its log_type and return every field; leave fields that do not apply as null.
