@@ -1,6 +1,0 @@
-mcp<2,>=1.27
-slimconfig
-
-[dev]
-pytest
-ruff

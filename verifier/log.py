@@ -76,9 +76,23 @@ def _expected(input_value) -> LogOutput:
 
 
 def _compare(expected: LogOutput, actual: LogOutput) -> str | None:
-    for field in expected.__dataclass_fields__:
-        exp = getattr(expected, field)
-        act = getattr(actual, field)
+    checks = (
+        ("kind", expected.kind, actual.kind),
+        ("timestamp", expected.timestamp, actual.timestamp),
+        ("remote_addr", expected.remote_addr, actual.remote_addr),
+        ("method", expected.method, actual.method),
+        ("path", expected.path, actual.path),
+        ("protocol", expected.protocol, actual.protocol),
+        ("status", expected.status, actual.status),
+        ("bytes_sent", expected.bytes_sent, actual.bytes_sent),
+        ("referer", expected.referer, actual.referer),
+        ("user_agent", expected.user_agent, actual.user_agent),
+        ("level", expected.level, actual.level),
+        ("message", expected.message, actual.message),
+        ("pid", expected.pid, actual.pid),
+        ("connection", expected.connection, actual.connection),
+    )
+    for field, exp, act in checks:
         if exp != act:
             return f"{field}: expected {exp!r}, got {act!r}"
     return None
