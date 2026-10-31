@@ -18,13 +18,13 @@ permissions > nanoagent.plugin.v0001.PermissionsConfig:
 # One entry per contract.Tool; its input and output classes are contract.TOOLS's.
 tools > dict[contract.Tool, nanoagent.plugin.v0001.ToolConfig]:
   analyze_log:
-    description: Parse one Web log line and classify it as an access or error record
+    description: Parse one Web log line, label it as an access or error record, and categorize error messages
 
 # One entry per contract.Task; its input class is contract.TASKS's.
 tasks > dict[contract.Task, nanoagent.plugin.v0001.TaskConfig]:
   analyze-log:
-    description: Parse and classify one Web server log line
+    description: Parse one Web server log line, label it as an access or error record, and categorize error messages
     runner: tool
     tools: [analyze_log]
     reference: null
-    instructions: Parse the log line according to its log_type and return every field; leave fields that do not apply as null.
+    instructions: Parse the log line according to its log_type; for an error log, fill category with one of connection_refused, permission_denied, file_not_found, timeout, upstream_error, or unknown; leave fields that do not apply as null.

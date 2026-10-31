@@ -43,6 +43,11 @@ class LogOutput(Output):
     message: Annotated[str | None, "Error message for an error log, else null"]
     pid: Annotated[int | None, "Process id for an error log, else null"]
     connection: Annotated[str | None, "Connection id like '*9' for an error log, else null"]
+    category: Annotated[
+        str | None,
+        "Semantic error category for an error log: connection_refused, permission_denied, "
+        "file_not_found, timeout, upstream_error, or unknown; null for an access log",
+    ]
 
 
 TOOLS = {Tool.ANALYZE_LOG: (LogInput, LogOutput)}

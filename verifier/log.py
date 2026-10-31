@@ -24,6 +24,26 @@ def _none_if_dash(value: str) -> str | None:
     return None if value == "-" else value
 
 
+def _categorize(message: str) -> str:
+    """Independent re-implementation of the error category rules.
+
+    The verifier must not import the plugin's implementation: it has to derive
+    the expected output from the input alone.
+    """
+    lowered = message.lower()
+    if "connection refused" in lowered:
+        return "connection_refused"
+    if "permission denied" in lowered:
+        return "permission_denied"
+    if "no such file or directory" in lowered:
+        return "file_not_found"
+    if "timed out" in lowered or "timeout" in lowered:
+        return "timeout"
+    if "upstream" in lowered:
+        return "upstream_error"
+    return "unknown"
+
+
 def _expected(input_value) -> LogOutput:
     """Independently parse the input into the output it must produce."""
     if input_value.log_type == "access":
@@ -47,6 +67,7 @@ def _expected(input_value) -> LogOutput:
             message=None,
             pid=None,
             connection=None,
+            category=None,
         )
 
     if input_value.log_type == "error":
@@ -70,6 +91,7 @@ def _expected(input_value) -> LogOutput:
             message=fields["message"],
             pid=int(fields["pid"]),
             connection=connection,
+            category=_categorize(fields["message"]),
         )
 
     raise ValueError("log_type must be 'access' or 'error'")
@@ -91,6 +113,7 @@ def _compare(expected: LogOutput, actual: LogOutput) -> str | None:
         ("message", expected.message, actual.message),
         ("pid", expected.pid, actual.pid),
         ("connection", expected.connection, actual.connection),
+        ("category", expected.category, actual.category),
     )
     for field, exp, act in checks:
         if exp != act:

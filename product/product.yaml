@@ -1,9 +1,9 @@
 _ > nanoagent.plugin.v0001.ProductConfig:
-tagline: "Parse and classify Web server log lines into typed JSON."
-summary: "Web Log Parser turns one Apache access log or Nginx error log line into a structured record, so you can inspect status codes, response sizes, error levels, and messages without writing regex yourself."
+tagline: "Parse Web server log lines and categorize error messages."
+summary: "Web Log Parser turns one Apache access log or Nginx error log line into a structured record. For error logs it also maps the message to a semantic category such as connection_refused or timeout, so you can triage incidents without reading raw text."
 highlights:
   - "Deterministic parsing with an independent verifier"
-  - "Handles both access logs and error logs in one task"
+  - "Categorizes error messages into a fixed, verifiable taxonomy"
 steps:
   - "Give it a log_type and a raw log line"
-  - "It returns every parsed field, with null for fields that do not apply"
+  - "It returns every parsed field plus a semantic error category"

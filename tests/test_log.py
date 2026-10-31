@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from contract import LogInput
-from plugin.log import analyze_log
+from plugin.log import analyze_log, categorize_error
 
 ACCESS_LINE = (
     '192.168.1.42 - - [10/Oct/2026:13:55:36 +0000] '
@@ -32,6 +32,7 @@ def test_parses_access_log():
     assert out.referer is None
     assert out.user_agent.startswith("Mozilla/5.0")
     assert out.level is None
+    assert out.category is None
 
 
 def test_parses_error_log():
@@ -42,6 +43,7 @@ def test_parses_error_log():
     assert out.pid == 1234
     assert out.connection == "*9"
     assert out.message.startswith("connect() failed")
+    assert out.category == "connection_refused"
     assert out.remote_addr is None
 
 
@@ -54,6 +56,7 @@ def test_boundary_missing_bytes_referer_user_agent():
     assert out.bytes_sent is None
     assert out.referer is None
     assert out.user_agent is None
+    assert out.category is None
 
 
 def test_rejects_unknown_log_type():
@@ -64,3 +67,36 @@ def test_rejects_unknown_log_type():
 def test_rejects_malformed_line():
     with pytest.raises(ValueError, match="Apache Combined"):
         analyze_log(LogInput(log_type="access", line="not a log line"), Path("."))
+
+
+@pytest.mark.parametrize(
+    "message, expected",
+    [
+        (
+            "connect() failed (111: Connection refused) while connecting to upstream",
+            "connection_refused",
+        ),
+        (
+            'open() "/var/www" failed (13: Permission denied)',
+            "permission_denied",
+        ),
+        (
+            'open() "/var/www/missing.html" failed (2: No such file or directory)',
+            "file_not_found",
+        ),
+        (
+            "upstream timed out (110: Connection timed out) while reading response header",
+            "timeout",
+        ),
+        (
+            "upstream prematurely closed connection while reading response header",
+            "upstream_error",
+        ),
+        (
+            "something completely unexpected happened",
+            "unknown",
+        ),
+    ],
+)
+def test_categorize_error(message, expected):
+    assert categorize_error(message) == expected

@@ -19,6 +19,11 @@ ERROR_LINE = (
     "connect() failed (111: Connection refused) while connecting to upstream"
 )
 
+TIMEOUT_LINE = (
+    "2026/10/10 13:55:37 [error] 1234#5678: *10 "
+    "upstream timed out (110: Connection timed out) while reading response header"
+)
+
 
 def _run(log_type: str, line: str):
     given = build_output({"log_type": log_type, "line": line}, LogInput)
@@ -38,6 +43,12 @@ def test_approves_correct_error_output():
     assert verifier.verify_input("analyze_log", given)["valid"] is True
     assert verifier.verify_output("analyze_log", given, made, ".")["valid"] is True
     assert verifier.verify_task("analyze-log", given, made, None, ".")["valid"] is True
+
+
+def test_approves_timeout_category():
+    given, made = _run("error", TIMEOUT_LINE)
+    assert made.category == "timeout"
+    assert verifier.verify_output("analyze_log", given, made, ".")["valid"] is True
 
 
 def test_refuses_wrong_status():
@@ -62,6 +73,22 @@ def test_refuses_non_null_unused_field():
     verdict = verifier.verify_output("analyze_log", given, made, ".")
     assert verdict["valid"] is False
     assert "level" in verdict["message"]
+
+
+def test_refuses_wrong_category():
+    given, made = _run("error", ERROR_LINE)
+    made.category = "unknown"
+    verdict = verifier.verify_output("analyze_log", given, made, ".")
+    assert verdict["valid"] is False
+    assert "category" in verdict["message"]
+
+
+def test_refuses_category_on_access_log():
+    given, made = _run("access", ACCESS_LINE)
+    made.category = "connection_refused"
+    verdict = verifier.verify_output("analyze_log", given, made, ".")
+    assert verdict["valid"] is False
+    assert "category" in verdict["message"]
 
 
 def test_refuses_malformed_input():

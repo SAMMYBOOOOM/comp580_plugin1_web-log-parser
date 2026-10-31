@@ -23,6 +23,26 @@ def _none_if_dash(value: str) -> str | None:
     return None if value == "-" else value
 
 
+def categorize_error(message: str) -> str:
+    """Map an Nginx error message to a semantic category.
+
+    Order matters: a message like "Connection refused while connecting to upstream"
+    matches both connection_refused and upstream_error, and connection_refused wins.
+    """
+    lowered = message.lower()
+    if "connection refused" in lowered:
+        return "connection_refused"
+    if "permission denied" in lowered:
+        return "permission_denied"
+    if "no such file or directory" in lowered:
+        return "file_not_found"
+    if "timed out" in lowered or "timeout" in lowered:
+        return "timeout"
+    if "upstream" in lowered:
+        return "upstream_error"
+    return "unknown"
+
+
 def analyze_log(log: LogInput, _workspace: Path) -> LogOutput:
     if log.log_type == "access":
         match = ACCESS_RE.match(log.line)
@@ -45,6 +65,7 @@ def analyze_log(log: LogInput, _workspace: Path) -> LogOutput:
             message=None,
             pid=None,
             connection=None,
+            category=None,
         )
 
     if log.log_type == "error":
@@ -68,6 +89,7 @@ def analyze_log(log: LogInput, _workspace: Path) -> LogOutput:
             message=fields["message"],
             pid=int(fields["pid"]),
             connection=connection,
+            category=categorize_error(fields["message"]),
         )
 
     raise ValueError("log_type must be 'access' or 'error'")
