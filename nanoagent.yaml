@@ -1,7 +1,7 @@
 _ > nanoagent.plugin.v0001.ManifestConfig:
 id: web-log-parser
 name: Web Log Parser
-version: 0.1.0
+version: 0.2.0
 status: in-development
 spec: nanoagent.plugin/v0001
 
